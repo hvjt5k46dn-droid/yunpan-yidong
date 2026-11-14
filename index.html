@@ -8,7 +8,7 @@
 <meta name="theme-color" content="#667eea">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧰</text></svg>">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>生活工具箱 · 调整版21</title>
+<title>生活工具箱 · 调整版22</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
@@ -565,7 +565,7 @@
 
   <!-- ========== 工具箱首页 ========== -->
   <div class="view active" id="viewHome">
-    <h1>🧰 生活工具箱 <span class="ver">调整版21 · 2026-11-14</span></h1>
+    <h1>🧰 生活工具箱 <span class="ver">调整版22 · 2026-11-15</span></h1>
     <p class="sub">精打细算过日子的小工具合集</p>
     <div class="field home-search">
       <input type="text" id="homeSearch" placeholder="🔍 搜小工具（如：图片 / 券 / 备菜 / 清单）…" oninput="homeFilter()">
@@ -1121,7 +1121,21 @@
 
       <!-- 第8页 图片区 -->
       <div class="wpage" id="wpage7">
-        <div class="wpage-head"><div class="wt">🖼️ 图片区 · 全部截图总揽</div><div class="wn">第 8 页</div><div class="wh">所有记录里的图片都在这（GIF 会动）；点图直接跳到它所在的那一页</div></div>
+        <div class="wpage-head"><div class="wt">🖼️ 图片区 · 全部截图总揽</div><div class="wn">第 8 页</div><div class="wh">自建图片区域随意加图；下方是各分区记录的图片总揽（点图跳原页）</div></div>
+        <div class="row" style="align-items:center;margin-bottom:8px">
+          <b style="font-size:14.5px">📁 我的图片区域</b>
+          <button type="button" class="mini-btn" style="padding:6px 12px;font-size:12px" onclick="waShowCreate()">➕ 新增图片区域</button>
+        </div>
+        <div id="waCreateBox" style="display:none;margin-bottom:10px">
+          <div class="row">
+            <input type="text" id="waNameInput" placeholder="给图片区域起个名字（如：穿搭参考 / 美食截图）" maxlength="16" style="flex:1">
+            <button type="button" class="mini-btn" style="flex-shrink:0" onclick="waCreate()">✅ 创建</button>
+            <button type="button" class="mini-btn" style="flex-shrink:0" onclick="waHideCreate()">取消</button>
+          </div>
+        </div>
+        <div id="wellAlbums"></div>
+        <input type="file" id="waFile" accept="image/*" multiple style="display:none">
+        <div class="sec-title" style="margin-top:14px">🧾 记录截图总揽</div>
         <div class="well-grid" id="wellGrid"></div>
         <div class="empty" id="wellGridEmpty" style="display:none">还没有图片～去各分区记录里粘贴截图/动图吧</div>
       </div>
@@ -2245,9 +2259,10 @@ function parsePasteCalc() {
 }
 
 /* ---------- 冻门食谱备菜器：粘贴识别 ---------- */
-const VEG_WORDS = ['南瓜','贝贝南瓜','西葫芦','葫芦','萝卜','甘蓝','紫甘蓝','玉米笋','玉米','豆芽','黄豆芽','绿豆芽','莴笋','油麦菜','佛手瓜','酸菜','泡菜','梅干菜','西兰花','花菜','菠菜','青菜','白菜','油菜','番茄','西红柿','黄瓜','茄子','辣椒','青椒','土豆','红薯','山药','洋葱','大蒜','蒜','韭菜','芹菜','生菜','冬瓜','丝瓜','苦瓜','豆角','豌豆','莲藕','笋','香菇','蘑菇','金针菇','杏鲍菇','木耳','银耳','胡萝卜','白萝卜','秋葵','芦笋','荸荠','百合','娃娃菜','空心菜','苋菜','茼蒿','香菜','葱姜'];
-const MEAT_WORDS = ['牛肉','猪肉','鸡肉','鸭肉','羊肉','鱼','虾','蟹','排骨','牛腩','肥牛','肉末','肉丝','肉片','鸡翅','鸡腿','鸡胸','三文鱼','带鱼','鲈鱼','鱿鱼','虾仁','扇贝','花甲','培根','火腿','香肠','排骨','猪蹄','牛腱','里脊','五花'];
-const STAPLE_WORDS = ['米饭','糙米','馒头','面条','粉丝','饺子','馄饨','面包','粥','面粉','米线','粽子','烧麦','包子','花卷','年糕','意面','通心粉','小米','黑米','糯米','燕麦'];
+const VEG_WORDS = ['南瓜','贝贝南瓜','西葫芦','葫芦','萝卜','甘蓝','紫甘蓝','豆芽','黄豆芽','绿豆芽','莴笋','油麦菜','佛手瓜','酸菜','泡菜','梅干菜','西兰花','花菜','黄心花菜','菠菜','青菜','白菜','上海青','乌塌菜','木耳菜','油菜','番茄','西红柿','黄瓜','茄子','辣椒','青椒','彩椒','甜椒','小米辣','土豆','山药','洋葱','大蒜','蒜','韭菜','芹菜','生菜','冬瓜','丝瓜','苦瓜','豆角','四季豆','长豇豆','豌豆','莲藕','笋','春笋','冬笋','茭白','香菇','蘑菇','金针菇','杏鲍菇','蟹味菇','白玉菇','木耳','银耳','胡萝卜','白萝卜','红萝卜','秋葵','芦笋','荸荠','百合','娃娃菜','空心菜','苋菜','茼蒿','香菜','葱姜','蒜苗','小葱','芥蓝','菜心','芋头','生姜','嫩豆腐','老豆腐','千张','腐竹','响铃卷','豆泡','豆腐'];
+const MEAT_WORDS = ['牛肉','猪肉','鸡肉','鸭肉','羊肉','鱼','虾','蟹','排骨','牛腩','肥牛','肥牛卷','肥羊卷','肉末','肉丝','肉片','鸡翅','鸡腿','鸡腿肉','鸡胸','鸡胸肉','猪里脊','猪瘦肉','三文鱼','带鱼','鲈鱼','鱿鱼','巴沙鱼','龙利鱼','虾仁','扇贝','花甲','培根','火腿','香肠','猪蹄','牛腱','里脊','五花'];
+const STAPLE_WORDS = ['米饭','糙米','馒头','面条','粉丝','饺子','馄饨','面包','粥','面粉','米线','粽子','烧麦','包子','花卷','年糕','意面','通心粉','小米','黑米','糯米','燕麦','玉米','甜玉米','糯玉米','老玉米','玉米笋','红薯','紫薯','地瓜'];
+const BUILTIN_FOOD = [...VEG_WORDS, ...MEAT_WORDS, ...STAPLE_WORDS];
 const PREP_STOP = ['立即','以上','食材','第二天','冰箱','技巧','然后','再把','把','再','防结块','分开装','混合','按每顿','过夜','摔','撒','商品','使用','耐低温','耐高温','食品级','是','的','放进','摊平','冷冻','结块','提前','备用','配菜','用料','准备','料头','荤菜','素菜','关火','捞出','装盘','少许','适量','一点'];
 
 function guessCat(name) {
@@ -2256,7 +2271,7 @@ function guessCat(name) {
   if (MEAT_WORDS.some(w => name.includes(w))) return '肉类';
   return '';
 }
-const VERB_STOP = ['对半切','切块','切丝','切片','切丁','切成','切小朵','焯水','沸水','洗净','去皮','去壳','腌制','分装','滚刀块','滚刀','煮熟','蒸熟','炒熟','断生','过油','下锅'];
+const VERB_STOP = ['对半切','切块','切丝','切片','切丁','切段','切圈','切末','切成','切小朵','掰小朵','撕小朵','剁碎','拍碎','焯水','沸水','洗净','淘洗','冲洗','去皮','去壳','去籽','去蒂','解冻','泡水','泡发','沥干','擦干','腌制','分装','滚刀块','滚刀','煮熟','蒸熟','炒熟','断生','过油','下锅'];
 function cleanNoun(s) {
   let n = String(s).trim();
   let changed = true;
@@ -2311,7 +2326,7 @@ function occurrences(text, sub) {
 /* ---------- 通用识别引擎（调整版6：支持「西葫芦、胡萝卜、豆芽」顿号枚举 + 更多做法动词） ---------- */
 const ENUM_CTX = /配菜|食材|材料|用料|准备|荤菜|素菜|料头|备料/;
 const LIST_VERB = /焯水|焯|煮熟|蒸熟|洗净|切|翻炒|煎|炸|煮|蒸|腌|备用|过油|断生|洗|泡/;
-const VERB_LOOK = '切块|切丝|切片|切丁|切小朵|对半切|切成|焯水|焯|沸水|洗净|去皮|去壳|腌制|腌|分装|煮熟|蒸熟|炒熟|断生|过油|备用';
+const VERB_LOOK = '切块|切丝|切片|切丁|切段|切圈|切末|切小朵|掰小朵|撕小朵|剁碎|拍碎|对半切|切成|焯水|焯|沸水|洗净|淘洗|冲洗|去皮|去壳|去籽|去蒂|解冻|泡水|泡发|沥干|擦干|腌制|腌|分装|煮熟|蒸熟|炒熟|断生|过油|备用';
 const TOOL_RE_G = /(保鲜袋|真空袋|密封袋|密封盒|保鲜盒|真空机|分装盒|自封袋|保鲜膜|饭盒)/g;
 const MISC_SKIP = /保鲜袋|保鲜膜|耐高温|耐低温|食品级|°C/;
 const CUT_WORDS = /保鲜袋|保鲜膜|真空|密封|自封袋|以上食材|技巧|防结块|冷冻过夜|商品|耐低温|耐高温|食品级|分装盒|饭盒/;
@@ -2330,9 +2345,11 @@ function extractFoodEntries(text) {
     cands.push({ name: n, pos: p, segOverride });
   };
 
-  // 0) 词库已知食材
+  // 0) 词库已知食材（调整版22：内置食材大词库也参与扫描，命中即识别）
   words.filter(w => (w.type || '食材') === '食材' && w.name.length >= 2 && text.includes(w.name))
        .forEach(w => addCand(w.name, text.indexOf(w.name), undefined));
+  BUILTIN_FOOD.filter(w => w.length >= 2 && text.includes(w))
+       .forEach(w => addCand(w, text.indexOf(w), undefined));
 
   // 1) 顿号枚举：「准备配菜：西葫芦、胡萝卜、豆芽、菠菜提前焯水」
   clauses.forEach(c => {
@@ -3269,6 +3286,91 @@ function renderWellGallery() {
   document.getElementById('wellGrid').innerHTML = tiles.join('');
   document.getElementById('wellGridEmpty').style.display = tiles.length ? 'none' : 'block';
 }
+
+/* ===== 调整版22：图片区支持自建「图片区域」（相册） ===== */
+const LS_WA = 'dg_well_albums_v1';
+let waData = loadLS(LS_WA, { albums: [] });
+if (!waData || !Array.isArray(waData.albums)) waData = { albums: [] };
+const saveWa = () => persist(LS_WA, waData);
+let waTarget = null;
+function waShowCreate() {
+  document.getElementById('waCreateBox').style.display = 'block';
+  document.getElementById('waNameInput').value = '';
+  document.getElementById('waNameInput').focus();
+}
+function waHideCreate() { document.getElementById('waCreateBox').style.display = 'none'; }
+function waCreate() {
+  const name = document.getElementById('waNameInput').value.trim();
+  if (!name) { showToast('⚠️ 先给图片区域起个名字'); return; }
+  waData.albums.push({ id: Date.now() + Math.floor(Math.random() * 997), name, imgs: [], ts: Date.now() });
+  if (!saveWa()) { waData.albums.pop(); return; }
+  waHideCreate(); renderWellAlbums();
+  showToast('📁 已新增图片区域「' + name + '」，点「📷 添加图片」往里放图');
+}
+function waDel(aid) {
+  if (!armCheck('walb', aid)) { renderWellAlbums(); showToast('再点一次「确定删」移除这个图片区域（含其中图片）'); return; }
+  waData.albums = waData.albums.filter(a => a.id !== aid);
+  saveWa(); renderWellAlbums(); showToast('🗑 已删除图片区域');
+}
+function waAddClick(aid) { waTarget = aid; document.getElementById('waFile').click(); }
+function waFiles(files) {
+  const a = waData.albums.find(x => x.id === waTarget);
+  if (!a) return;
+  [...files].forEach(f => {
+    if (!f.type.startsWith('image/')) return;
+    if (a.imgs.length >= 30) { showToast('单个图片区域最多 30 张'); return; }
+    if (f.type === 'image/gif') {
+      if (f.size > 4 * 1024 * 1024) { showToast('⚠️ GIF 超过 4MB 存不进'); return; }
+      const r = new FileReader();
+      r.onload = () => { a.imgs.push(r.result); saveWa(); renderWellAlbums(); };
+      r.readAsDataURL(f);
+    } else {
+      compressImg(f, url => { a.imgs.push(url); saveWa(); renderWellAlbums(); });
+    }
+  });
+}
+function waImgDel(aid, idx) {
+  if (!armCheck('waimg', aid + '_' + idx)) { renderWellAlbums(); showToast('再点一次「✕」删掉这张图'); return; }
+  const a = waData.albums.find(x => x.id === aid);
+  if (a) { a.imgs.splice(idx, 1); saveWa(); renderWellAlbums(); }
+}
+function lbShowWa(aid, idx) {
+  const a = waData.albums.find(x => x.id === aid);
+  if (a && a.imgs[idx]) lbShow(a.imgs[idx]);
+}
+function renderWellAlbums() {
+  const box = document.getElementById('wellAlbums');
+  if (!box) return;
+  if (!waData.albums.length) {
+    box.innerHTML = '<div class="empty" style="padding:12px">还没有自建图片区域～点上面「➕ 新增图片区域」建一个（如：穿搭参考、美食截图、好物收集）</div>';
+    return;
+  }
+  box.innerHTML = waData.albums.map(a => {
+    const armed = isArmed('walb', a.id);
+    const tiles = a.imgs.map((s, i) => {
+      const imged = isArmed('waimg', a.id + '_' + i);
+      return `<div class="well-tile" onclick="lbShowWa(${a.id},${i})"><img src="${s}" alt="">` +
+        `<button type="button" class="gal-del ${imged ? 'armed' : ''}" onclick="event.stopPropagation();waImgDel(${a.id},${i})">${imged ? '确定删?' : '✕'}</button></div>`;
+    }).join('');
+    return `<div class="deal-stat">
+      <div class="row" style="align-items:center">
+        <span class="ds-name">📁 ${esc(a.name)}</span>
+        <span class="badge b-tool">${a.imgs.length} 张</span>
+        <span style="flex:1"></span>
+        <button type="button" class="mini-btn" style="flex-shrink:0;padding:6px 10px;font-size:12px" onclick="waAddClick(${a.id})">📷 添加图片</button>
+        <button type="button" class="mini-btn danger ${armed ? 'del-armed' : ''}" style="flex-shrink:0;padding:6px 10px;font-size:12px" onclick="waDel(${a.id})">${armed ? '🗑 确定删?' : '🗑'}</button>
+      </div>
+      ${tiles ? `<div class="well-grid" style="margin-top:9px">${tiles}</div>` : '<div style="font-size:11.5px;color:#999;margin-top:7px">空的～点「📷 添加图片」选图（GIF 会动，单区最多 30 张）</div>'}
+    </div>`;
+  }).join('');
+}
+function waInit() {
+  const fi = document.getElementById('waFile');
+  if (!fi || fi.dataset.bound) return;
+  fi.dataset.bound = '1';
+  fi.addEventListener('change', function () { waFiles(this.files); this.value = ''; });
+}
+
 function renderWellToc() {
   document.getElementById('wellToc').innerHTML = WELL_ZONES.map((z, i) =>
     `<div class="wtoc-item" onclick="wellGoPage(${i + 1})">${z.icon} ${esc(z.title)}<span class="pg">第 ${i + 2} 页 ›</span></div>`).join('') +
@@ -3277,6 +3379,7 @@ function renderWellToc() {
 function renderWellAll() {
   WELL_ZONES.forEach(z => renderWellZone(z.zone));
   renderWellGallery();
+  renderWellAlbums();
   renderWellToc();
   const n = wellData.entries.length;
   const imgs = wellData.entries.reduce((s, e) => s + (e.imgs || []).length, 0);
@@ -3656,6 +3759,7 @@ function collectAllImages() {
     out.push({ src: s, from: (z ? z.icon + ' 手册 · ' : '📗 手册 · ') + (e.title || '记录') });
   }));
   galData.items.forEach(g => out.push({ src: g.src, from: g.kind === 'video' ? '🎞 合集 · 实况' : '🖼️ 合集上传', kind: g.kind || 'img' }));
+  waData.albums.forEach(a => a.imgs.forEach(s => out.push({ src: s, from: '📁 手册图片区 · ' + a.name })));
   return out;
 }
 function renderGalleryAll() {
@@ -4056,6 +4160,20 @@ bindAc('fTool', 'acTool', n => addTool(n), true);
 bindAc('mIng', 'acMIng', n => addMIng(n), false);
 renderLists();
 renderTagChips();
+/* 调整版22：内置食材词一次性灌入联想词库（有版本号标记，不重复灌） */
+function seedWordsOnce() {
+  if (loadLS('dg_words_seed_v22', false)) return;
+  const have = new Set(words.map(w => w.name));
+  BUILTIN_FOOD.forEach(n => {
+    if (n.length < 2 || have.has(n)) return;
+    words.push({ name: n, cat: guessCat(n), type: '食材' });
+    have.add(n);
+  });
+  if (persist(LS_WORDS, words)) persist('dg_words_seed_v22', true);
+}
+seedWordsOnce();
+renderWords();
+waInit();
 wellEnter();
 galInit();
 galMigrate();
